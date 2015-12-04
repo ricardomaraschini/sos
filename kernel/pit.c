@@ -45,11 +45,12 @@ register_event(unsigned long every, void (*handler)()) {
 	int i;
 
 	for (i=0; i<MAX_EVENTS; i++) {
-		if (global_events[i].every == 0) {
-			global_events[i].every = every;
-			global_events[i].handler = handler;
-			return 0;
-		}
+		if (global_events[i].every != 0)
+			continue;
+
+		global_events[i].every = every;
+		global_events[i].handler = handler;
+		return 0;
 	}
 
 	return -1;
@@ -87,6 +88,6 @@ init_timer(int frequency) {
 
 	empty_events_queue();
 
-	register_event(100, event_handler);
+	//register_event(100, event_handler);
 
 }
