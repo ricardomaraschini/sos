@@ -1,0 +1,65 @@
+sos stands for stupid operating system.
+it just boots, intercepts irqs and i have no idea
+when i'm going to implement something else in here.
+
+there's also a timer that i have done, why? only
+god knows why, dont ask me.
+
+in order to compile and run you gonna have to
+install nasm, gcc and qemu, on the directory
+run ./make_everything.sh and hope for the best.
+
+
+interesting links:
+http://www.osdever.net/bkerndev/Docs/basickernel.htm
+http://www.jamesmolloy.co.uk/tutorial_html/
+http://wiki.osdev.org/GRUB
+http://wiki.osdev.org/Bare_bones#Booting_the_kernel
+
+creating a floppy image:
+$ mkfs.vfat -C floppy.img 1440
+
+mounting floppy image 
+$ mount -o loop -t vfat floppy.img /mnt/floppy
+
+// XXX
+creating grub auxiliar image into floppy
+$ dd if=/dev/zero of=pad bs=1 count=750 # creates pad file
+$ cat stage1 stage2 pad kernel.bin > floppy.img 
+
+new boot process:
+creating auxiliar floppy
+
+$ dd if=<stage1> of=/dev/fd0 bs=512 count=1
+$ dd if=<stage2> of=/dev/fd0 bs=512 seek=1
+
+boot from this disk with fd1 configured to other fd created as
+follow:
+$ mount -o loop -t vfat floppy.img /mnt/floppy 
+$ mkdir /mnt/floppy/boot
+$ cp <stage1> /mnt/floppy/boot
+$ cp <stage2> /mnt/floppy/boot
+
+boot from auxiliar disk.
+after boot, on grub> command line:
+grub> install (fd1)/boot/stage1 (fd1) (fd1)/boot/stage2 (fd1)/boot/menu.cfg
+
+
+selecting menu.cfg
+grub> configfile (fd0)/boot/menu.cfg
+
+
+installing glibc i686 devel
+$ yum install glibc-devel.i386
+
+compiling for 32 bits on x86_64
+$ gcc -m32 -Wall -o helloworld helloworld.c
+
+kernel compilation process:
+$ nasm -f aout -o start.o start.asm
+$ ld -mi386linux -T link.ld -o kernel.bin start.o
+
+
+compiling kernel:
+$ gcc -m32 -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin -I./include -c -o main.o main.c
+
