@@ -22,27 +22,31 @@ $ mkfs.vfat -C floppy.img 1440
 mounting floppy image 
 $ mount -o loop -t vfat floppy.img /mnt/floppy
 
-// XXX
+// XXX DEPRECATED
 creating grub auxiliar image into floppy
 $ dd if=/dev/zero of=pad bs=1 count=750 # creates pad file
 $ cat stage1 stage2 pad kernel.bin > floppy.img 
 
+// GRUB INSTALLATION
 new boot process:
 creating auxiliar floppy
 
-$ dd if=<stage1> of=/dev/fd0 bs=512 count=1
-$ dd if=<stage2> of=/dev/fd0 bs=512 seek=1
+$ dd if=<stage1> of=auxiliar.img bs=512 count=1
+$ dd if=<stage2> of=auxiliar.img bs=512 seek=1
 
 boot from this disk with fd1 configured to other fd created as
 follow:
+$ mkfs.vfat -C floppy.img 1440
 $ mount -o loop -t vfat floppy.img /mnt/floppy 
 $ mkdir /mnt/floppy/boot
 $ cp <stage1> /mnt/floppy/boot
 $ cp <stage2> /mnt/floppy/boot
+$ cp <menu.cfg> /mnt/floppy/boot
 
 boot from auxiliar disk.
+$ qemu-system-i386 -fda auxiliar.img -fdb floppy.img -boot a
 after boot, on grub> command line:
-grub> install (fd1)/boot/stage1 (fd1) (fd1)/boot/stage2 (fd1)/boot/menu.cfg
+grub> install (fd1)/boot/stage1 (fd1) (fd1)/boot/stage2 (fd1)/boot/menu.cfg (fd1)/boot/menu.cfg
 
 
 selecting menu.cfg
