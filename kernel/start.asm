@@ -37,6 +37,7 @@ stublet:
 
 global gdt_flush
 extern gp
+
 ; gdt entries
 ; 0x00 - our dummy gdt entry
 ; 0x08 - our gdt for data segment

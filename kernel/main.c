@@ -66,14 +66,13 @@ unsigned char
 /**
  * write val on dest count times
  */
-unsigned short 
-*memsetw(unsigned short *dest, unsigned short val, int count)
+unsigned short  *
+memsetw(unsigned short *dest, unsigned short val, int count)
 {
 	int i;
 
-	for(i=0; i<count; i++) {
+	for(i=0; i<count; i++)
 		*(dest+i) = val;
-	}
 
 	return dest;
 }
@@ -126,7 +125,6 @@ main()
 	char *system_ready = "ready to run...\n\0";
 
 	init_video();
-
 	gdt_install();
 	idt_install();
 	irq_install();

@@ -29,19 +29,22 @@ dispatch_events()
 }
 
 void
-timer_callback(struct regs *r) {
+timer_callback(struct regs *r) 
+{
 	ticks++;
 	dispatch_events();
 }
 
 void
-event_handler() {
+event_handler()
+{
 	putint(ticks);
 	putch('\n');
 }
 
 int
-register_event(unsigned long every, void (*handler)()) {
+register_event(unsigned long every, void (*handler)())
+{
 	int i;
 
 	for (i=0; i<MAX_EVENTS; i++) {
@@ -57,7 +60,8 @@ register_event(unsigned long every, void (*handler)()) {
 }
 
 void
-empty_events_queue() {
+empty_events_queue()
+{
 	int i;
 
 	for (i=0; i<MAX_EVENTS; i++) {
@@ -67,7 +71,8 @@ empty_events_queue() {
 }
 
 void
-init_timer(int frequency) {
+init_timer(int frequency)
+{
 	
 	int divisor;
 	unsigned char low;

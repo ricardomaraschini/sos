@@ -97,7 +97,6 @@ putch(unsigned char c)
 	unsigned short *where;
 	unsigned att = attrib << 8;
 
-	
 	if (c == 0x08 && cursor.x != 0) { /* backspace */
 		cursor.x--;
 
@@ -156,7 +155,7 @@ settextcolor(unsigned char backcolor, unsigned char forecolor)
 	 *  - char in ascii format
 	 */
 
-	attrib = (backcolor << 4) | forecolor;
+	attrib = (backcolor << 4) | (forecolor & 0xF);
 }
 
 void 

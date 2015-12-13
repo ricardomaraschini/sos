@@ -109,9 +109,9 @@ gdt_install()
 	// code and data overlap each other
 	gdt_set_gate(0, 0, 0x00000000, 0, 0); // dummy gdt entry
 	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // kernel mode code segment
-	gdt_set_gate(2, 0, 0xFFFFFFFF, 0X92, 0XCF); // kernel mode data segment
-	gdt_set_gate(3, 0, 0xFFFFFFFF, 0XFA, 0XCF); // user mode code segment
-	gdt_set_gate(4, 0, 0xFFFFFFFF, 0XF2, 0XCF); // user mode data segment
+	gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // kernel mode data segment
+	gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // user mode code segment
+	gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // user mode data segment
 
 	// 0x9A -> designs a kernel code segment
 	// 0x92 -> designs a kernel data segment
