@@ -1,4 +1,7 @@
 #include <system.h>
+#include <port.h>
+#include <video.h>
+#include <irq.h>
 
 #define KB_BUF 0x60
 

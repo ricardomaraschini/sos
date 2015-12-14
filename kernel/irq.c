@@ -1,4 +1,6 @@
 #include <system.h>
+#include <port.h>
+#include <idt.h>
 
 extern void irq_0();
 extern void irq_1();
@@ -135,3 +137,8 @@ irq_handler(struct regs *r)
 	outportb(0x20,0x20);
 }
 
+void
+enable_hw_interrupts()
+{
+	__asm__ __volatile__ ("sti"); // enable hw irqs
+}

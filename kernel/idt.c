@@ -1,4 +1,6 @@
 #include <system.h>
+#include <video.h>
+#include <memutil.h>
 
 
 /**

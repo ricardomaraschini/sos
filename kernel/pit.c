@@ -1,15 +1,11 @@
 #include <system.h>
+#include <pit.h>
+#include <video.h>
+#include <irq.h>
+#include <port.h>
 
-#define PIT_HZ		1193180
-#define PIT_DATA0	0x40
-#define PIT_DATA1	0x41
-#define PIT_DATA2	0x42
-#define PIT_CMD		0x43
-
-#define MAX_EVENTS	256
-
-unsigned long ticks = 0;
-struct scheduled_event global_events[MAX_EVENTS];
+unsigned long		ticks = 0;
+struct scheduled_event	global_events[MAX_EVENTS];
 
 void
 dispatch_events()

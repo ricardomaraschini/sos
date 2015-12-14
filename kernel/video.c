@@ -1,6 +1,8 @@
 #include <system.h>
-
-#define BLANK	0x20
+#include <video.h>
+#include <memutil.h>
+#include <port.h>
+#include <string.h>
 
 struct cursor_position cursor = {0,0};
 unsigned short *textmemptr;

@@ -1,4 +1,5 @@
 #include <system.h>
+#include <video.h>
 
 /**
  * a gdt entry
