@@ -9,6 +9,7 @@ u32int			 placement_address = (u32int)&end;
 u32int
 kmalloc_internal(u32int sz, int align, u32int *phys)
 {
+	u32int	tmp;
 
 	if (align == 1 && (placement_address & 0xFFFFF000)) {
 		placement_address &= 0xFFFFF000; // begin of last allocation
@@ -19,7 +20,7 @@ kmalloc_internal(u32int sz, int align, u32int *phys)
 	if (phys)
 		*phys = placement_address;
 
-	u32int tmp = placement_address;
+	tmp = placement_address;
 	placement_address += sz;
 	return tmp;
 }

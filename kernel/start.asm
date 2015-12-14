@@ -165,8 +165,8 @@ isr_common_stub:
 
 
 %macro IRQ_NOERRORCODE 2
-global irq_%1
-irq_%1:
+global irq%1
+irq%1:
 	cli
 	push byte 0
 	push byte %2

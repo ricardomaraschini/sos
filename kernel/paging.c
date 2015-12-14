@@ -6,8 +6,8 @@
 #include <irq.h>
 
 extern u32int		 placement_address;
-page_directory_t	*current_directory;
 page_directory_t	*kernel_directory;
+page_directory_t	*current_directory;
 u32int			*frames;
 u32int			 nframes;
 
@@ -37,7 +37,6 @@ clear_frame(u32int frame_addr)
 	off = OFFSET_FROM_BIT(frame);
 
 	frames[idx] &= ~(0x1 << off);
-
 }
 
 /*
@@ -86,7 +85,6 @@ alloc_frame(page_t *page, int is_kernel, int is_writeable)
 	if (page->frame != 0)
 		return;
 
-	
 	idx = first_frame();
 	if (idx == (u32int)-1) {
 		puts("no free frames\n\0");
@@ -192,13 +190,12 @@ get_page(u32int address, int make, page_directory_t *dir)
 	table_idx = address / 1024;
 
 	if (dir->tables[table_idx])
-		return &dir->tables[table_idx]->pages[address%1024];
+		return &dir->tables[table_idx]->pages[address % 1024];
 
 	if (!make)
 		return 0;
 
-
-	dir->tables[table_idx] = (page_table_t*)kmalloc_ap(sizeof(page_table_t), &tmp);	
+	dir->tables[table_idx] = (page_table_t *)kmalloc_ap(sizeof(page_table_t), &tmp);	
 	memset((unsigned char *)dir->tables[table_idx], 0, 0x1000);
 	dir->tables_physical[table_idx] = tmp | 0x7; // PRESENT, RW, US.
 	return &dir->tables[table_idx]->pages[address % 1024];

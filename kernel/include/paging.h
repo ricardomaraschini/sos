@@ -18,16 +18,16 @@ typedef struct page_table {
 typedef struct page_directory {
 	page_table_t	*tables[1024];
 	u32int		 tables_physical[1024];
-	u32int		 physicalAddr;
+	u32int		 physical_addr;
 } page_directory_t;
 
 void initialise_paging();
-void switch_page_directory(page_directory_t *n);
-page_t *get_page(u32int address, int make, page_directory_t *dir);
-void page_faul(register_t regs);
+void switch_page_directory(page_directory_t *);
+page_t *get_page(u32int, int make, page_directory_t *);
+void page_faul(register_t);
 
-#define INDEX_FROM_BIT(a)  (a/(8*4))
-#define OFFSET_FROM_BIT(a) (a%(8*4))
+#define INDEX_FROM_BIT(a)  (a / (8*4))
+#define OFFSET_FROM_BIT(a) (a % (8*4))
 
 
 #endif
