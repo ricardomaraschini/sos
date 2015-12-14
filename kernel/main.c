@@ -132,6 +132,7 @@ main()
 	enable_hw_interrupts();
 	keyboard_install();
 
+	initialise_paging();
 	puts(system_ready);
 
 	// generating an exception
