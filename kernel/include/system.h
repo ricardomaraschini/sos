@@ -11,7 +11,6 @@ typedef unsigned int	size_t;
 
 #define NULL '\0'
 
-
 typedef struct regs {
 	u32int ds;					// Data segment selector
 	u32int edi, esi, ebp, esp, ebx, edx, ecx, eax;	// Pushed by pusha.

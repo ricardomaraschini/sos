@@ -39,6 +39,7 @@ clear_frame(u32int frame_addr)
 	frames[idx] &= ~(0x1 << off);
 }
 
+/*
 static u32int
 test_frame(u32int frame_addr)
 {
@@ -52,6 +53,7 @@ test_frame(u32int frame_addr)
 
 	return (frames[idx] & (0x1 << off));
 }
+*/
 
 static u32int
 first_frame()
