@@ -5,8 +5,8 @@ DIR=$PWD
 
 cd $DIR/kernel
 
-nasm -f aout -o start.o start.asm
-nasm -f aout -o interrupts.o interrupts.asm
+nasm -f aout -o start.o start.S
+nasm -f aout -o interrupts.o interrupts.S
 /usr/bin/gcc -m32 -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin -I./include -c -o main.o main.c
 /usr/bin/gcc -m32 -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin -I./include -c -o int.o int.c
 /usr/bin/gcc -m32 -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin -I./include -c -o kb.o kb.c
@@ -32,6 +32,7 @@ ld -mi386linux -T link.ld -o kernel.bin 	\
 	gdt.o					\
 	kheap.o					\
 	paging.o
+
 
 sudo mount -o loop -t vfat $DIR/boot.img /mnt/floppy
 sudo cp $DIR/kernel/kernel.bin /mnt/floppy/boot

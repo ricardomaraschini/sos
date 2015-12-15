@@ -24,7 +24,7 @@ typedef struct page_directory {
 void initialise_paging();
 void switch_page_directory(page_directory_t *);
 page_t *get_page(u32int, int make, page_directory_t *);
-void page_faul(register_t);
+void page_faul(registers_t);
 
 #define INDEX_FROM_BIT(a)  (a / (8*4))
 #define OFFSET_FROM_BIT(a) (a % (8*4))

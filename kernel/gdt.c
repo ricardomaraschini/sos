@@ -7,13 +7,14 @@
  * 64 bits(8 bytes) for every entry
  */
 struct gdt_entry {
-	unsigned short limit_low;
-	unsigned short base_low;
-	unsigned char base_middle;
-	unsigned char access;
-	unsigned char granularity;
-	unsigned char base_high;
+	u16int	limit_low;
+	u16int	base_low;
+	u8int	base_middle;
+	u8int	access;
+	u8int	granularity;
+	u8int	base_high;
 } __attribute__((packed)); // packet avoids gcc `optimizations'
+typedef struct gdt_entry gdt_entry_t;
 
 /**
  * gdt:
@@ -50,9 +51,10 @@ struct gdt_entry {
  * the limit
  */
 struct gdt_ptr {
-	unsigned short limit;
-	unsigned int base;
+	u16int	limit;
+	u32int	base;
 }__attribute__((packed));
+typedef struct gdt_ptr gdt_ptr_t;
 
 /**
  * gdt_ptr points to our list
@@ -70,12 +72,12 @@ struct gdt_entry gdt[5]; // our 3 gdts entries
 struct gdt_ptr gp;
 extern void gdt_flush();
 
-void
-gdt_set_gate( int num, 
-              unsigned long base, 
-              unsigned long limit, 
-              unsigned char access, 
-              unsigned char gran )
+static void
+gdt_set_gate( s32int num, 
+              u32int base, 
+              u32int limit, 
+              u8int  access, 
+              u8int  gran )
 {
 
 	/* descriptor base address */
@@ -96,8 +98,6 @@ gdt_set_gate( int num,
 void
 gdt_install()
 {
-	puts("installing global descriptor tables...\0");
-
 	// gdt base is at &gdt
 	gp.base = (int)&gdt;
 
@@ -118,8 +118,5 @@ gdt_install()
 	// 0x92 -> designs a kernel data segment
 	// 0xFA -> designs a user code segment
 	// 0xF2 -> designs a user data segment
-
-	gdt_flush(); // look start.asm
-
-	puts("done.\r\n\0");
+	gdt_flush((u32int)&gp); // look start.asm
 }

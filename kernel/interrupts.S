@@ -5,7 +5,7 @@
 ; in order to mantain compatibility, we
 ; push zero before request number
 %macro ISR_NOERRCODE 1
-global isr%1
+[GLOBAL isr%1]
 isr%1:
 	cli
 	push byte 0
@@ -16,7 +16,7 @@ isr%1:
 ; macro for service requests that already
 ; pushed a value to stack
 %macro ISR_ERRCODE 1
-global isr%1
+[GLOBAL isr%1]
 isr%1:
 	cli
 	push byte %1
@@ -25,7 +25,7 @@ isr%1:
 
 ; macro for irqs
 %macro IRQ 2
-global irq%1
+[GLOBAL irq%1]
 irq%1:
 	cli
 	push byte 0
@@ -83,6 +83,7 @@ IRQ 14,46
 IRQ 15,47
 
 extern isr_handler
+extern irq_handler
 
 isr_common_stub:
     pusha         ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
@@ -98,18 +99,16 @@ isr_common_stub:
 
     call isr_handler
 
-    pop ebx        ; reload the original data segment descriptor
-    mov ds, bx
-    mov es, bx
-    mov fs, bx
-    mov gs, bx
+    pop eax        ; reload the original data segment descriptor
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
 
     popa           ; Pops edi,esi,ebp...
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
     sti
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
-
-extern irq_handler
 
 irq_common_stub:
     pusha         ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax

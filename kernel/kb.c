@@ -21,7 +21,7 @@ unsigned char kbdus[128] =
 
 
 void
-keyboard_handler(register_t r)
+keyboard_handler(registers_t r)
 {
 	unsigned char scancode;
 
@@ -41,5 +41,5 @@ keyboard_handler(register_t r)
 void
 keyboard_install()
 {
-	irq_install_handler(IRQ_KEYBOARD, (isr_t)keyboard_handler); 
+	irq_install_handler(IRQ1, (isr_t)keyboard_handler); 
 }

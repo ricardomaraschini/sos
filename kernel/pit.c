@@ -4,7 +4,7 @@
 #include <int.h>
 #include <port.h>
 
-unsigned long		ticks = 0;
+u32int			ticks = 0;
 struct scheduled_event	global_events[MAX_EVENTS];
 
 void
@@ -25,9 +25,10 @@ dispatch_events()
 }
 
 void
-timer_callback(struct regs *r) 
+timer_callback(registers_t r) 
 {
 	ticks++;
+	putint(ticks);
 	dispatch_events();
 }
 
@@ -67,14 +68,14 @@ empty_events_queue()
 }
 
 void
-init_timer(int frequency)
+init_timer(u32int frequency)
 {
 	
-	int		divisor;
-	unsigned char	low;
-	unsigned char	high;
+	u32int	divisor;
+	u8int	low;
+	u8int	high;
 
-	irq_install_handler(IRQ_PIT, (isr_t)timer_callback);
+	irq_install_handler(IRQ0, (isr_t)timer_callback);
 
 	divisor = PIT_HZ / frequency;
 
@@ -84,8 +85,7 @@ init_timer(int frequency)
 	low = divisor & 0xFF;
 	high = (divisor >> 8) & 0xFF;
 
-	outportb(PIT_DATA0,low);
-	outportb(PIT_DATA0,high);
+	outportb(PIT_DATA0, low);
+	outportb(PIT_DATA0, high);
 
-	empty_events_queue();
 }

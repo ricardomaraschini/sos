@@ -15,7 +15,7 @@ main()
 	enable_hw_interrupts();
 	init_video();
 	keyboard_install();
-	//init_timer(80000); // pit stuff
+	init_timer(50); // pit stuff
 	initialise_paging();
 	puts("ready\n\0");
 
@@ -24,7 +24,7 @@ main()
 
 	// generating an exception
 	//int x = 10/0;
-	//__asm__ __volatile__ ("int $0xE");
+	__asm__ __volatile__ ("int $0x3");
 
 	for (;;);
 

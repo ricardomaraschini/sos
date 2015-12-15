@@ -112,7 +112,7 @@ free_frame(page_t *page)
 }
 
 void
-page_fault(register_t *regs)
+page_fault(registers_t *regs)
 {
 	/*
 	u32int	 faulting_address;

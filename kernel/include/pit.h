@@ -8,7 +8,7 @@
 #define PIT_CMD		0x43
 #define MAX_EVENTS	256
 
-void init_timer(int frequency);
+void init_timer(u32int frequency);
 
 struct scheduled_event {
 	unsigned long every;

@@ -24,13 +24,34 @@
 
 // pic data
 #define MPIC_OFFSET		0x20 // 32, cause 0 to 31 are processor reserved
-#define SPIC_OFFSET		0x28 
+#define SPIC_OFFSET		0x28
 #define PIC_MODE8886		0x01
 
 #define IRQ_PIT			0x00
 #define IRQ_KEYBOARD		0x01
 #define IRQ_PAGEFAULT		0x14
 
+
+// after pic remap, these are the
+// real irqs
+#define IRQ0			32
+#define IRQ1			33
+#define IRQ2			34
+#define IRQ3			35
+#define IRQ4			36
+#define IRQ5			37
+#define IRQ6			38
+#define IRQ7			39
+#define IRQ8			40
+#define IRQ9			41
+#define IRQ10			42
+#define IRQ11			43
+#define IRQ12			44
+#define IRQ13			45
+#define IRQ14			46
+#define IRQ15			47
+
+// idt entry is exactly 64 bits long
 struct idt_entry {
 	u16int	base_lo;	// lower 16 bits of the address to jump to when this interrupt fires.
 	u16int	sel; 		// kernel segment selector
@@ -42,11 +63,11 @@ typedef struct idt_entry idt_entry_t;
 
 struct idt_ptr {
 	u16int	limit;
-	u8int	base[sizeof(u32int)];
+	u32int	base;
 }__attribute__((packed));
 typedef struct idt_ptr idt_ptr_t;
 
-typedef void (*isr_t)(register_t);
+typedef void (*isr_t)(registers_t);
 
 void reprogram_pic();
 void isr_handler(struct regs);
@@ -55,8 +76,5 @@ void enable_hw_interrupts();
 void irq_install_handler(u8int, isr_t);
 void uninstall_irq(int irq);
 void irq_handler(struct regs);
-
-#define irq_master_mask         (((unsigned char *)&(irq_mask))[0])
-#define irq_slave_mask          (((unsigned char *)&(irq_mask))[1])
 
 #endif
