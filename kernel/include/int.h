@@ -27,22 +27,22 @@
 #define SPIC_OFFSET		0x28 
 #define PIC_MODE8886		0x01
 
-#define IRQ_PIT			0x0
-#define IRQ_KEYBOARD		0x1
+#define IRQ_PIT			0x00
+#define IRQ_KEYBOARD		0x01
 #define IRQ_PAGEFAULT		0x14
 
 struct idt_entry {
-	unsigned short	base_lo;	// lower 16 bits of the address to jump to when this interrupt fires.
-	unsigned short	sel; 		// kernel segment selector
-	unsigned char	always0;
-	unsigned char	flags;
-	unsigned short	base_hi; 	// upper 16 bits of the address to jump to
+	u16int	base_lo;	// lower 16 bits of the address to jump to when this interrupt fires.
+	u16int	sel; 		// kernel segment selector
+	u8int	always0;
+	u8int	flags;
+	u16int	base_hi; 	// upper 16 bits of the address to jump to
 }__attribute__((packed));
 typedef struct idt_entry idt_entry_t;
 
 struct idt_ptr {
-	unsigned short limit;
-	unsigned int base;
+	u16int	limit;
+	u8int	base[sizeof(u32int)];
 }__attribute__((packed));
 typedef struct idt_ptr idt_ptr_t;
 
@@ -55,5 +55,8 @@ void enable_hw_interrupts();
 void irq_install_handler(u8int, isr_t);
 void uninstall_irq(int irq);
 void irq_handler(struct regs);
+
+#define irq_master_mask         (((unsigned char *)&(irq_mask))[0])
+#define irq_slave_mask          (((unsigned char *)&(irq_mask))[1])
 
 #endif

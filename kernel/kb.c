@@ -21,7 +21,7 @@ unsigned char kbdus[128] =
 
 
 void
-keyboard_handler(struct regs *r)
+keyboard_handler(register_t r)
 {
 	unsigned char scancode;
 

@@ -16,7 +16,7 @@ main()
 	init_video();
 	keyboard_install();
 	//init_timer(80000); // pit stuff
-	//initialise_paging();
+	initialise_paging();
 	puts("ready\n\0");
 
 	//u32int *ptr = (u32int*)0xABC00000;
