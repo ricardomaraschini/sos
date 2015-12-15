@@ -21,9 +21,9 @@ typedef struct page_directory {
 	u32int		 physical_addr;
 } page_directory_t;
 
-void initialise_paging();
+void init_paging();
 void switch_page_directory(page_directory_t *);
-page_t *get_page(u32int, int make, page_directory_t *);
+page_t *get_page(u32int, int, page_directory_t *);
 void page_faul(registers_t);
 
 #define INDEX_FROM_BIT(a)  (a / (8*4))

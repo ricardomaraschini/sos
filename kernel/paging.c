@@ -39,7 +39,6 @@ clear_frame(u32int frame_addr)
 	frames[idx] &= ~(0x1 << off);
 }
 
-/*
 static u32int
 test_frame(u32int frame_addr)
 {
@@ -53,7 +52,6 @@ test_frame(u32int frame_addr)
 
 	return (frames[idx] & (0x1 << off));
 }
-*/
 
 static u32int
 first_frame()
@@ -112,7 +110,7 @@ free_frame(page_t *page)
 }
 
 void
-page_fault(registers_t *regs)
+page_fault(registers_t regs)
 {
 	/*
 	u32int	 faulting_address;
@@ -133,18 +131,16 @@ page_fault(registers_t *regs)
 	id = regs.err_code * 0x10;
 	*/
 
-	puts("page fault\0");
+	puts("page fault\n\0");
 	for(;;);
 
 }
 
 void
-initialise_paging()
+init_paging()
 {
 	u32int	 mem_end_page = 0x1000000; // 16 MB
 	int	 i = 0;
-
-	puts("initialising paging system\n\0");
 
 	nframes = mem_end_page / 0x1000;
 	frames = (u32int *)kmalloc(INDEX_FROM_BIT(nframes));
@@ -153,7 +149,7 @@ initialise_paging()
 	kernel_directory = 
 	    (page_directory_t *)kmalloc_a(sizeof(page_directory_t));
 
-	memset((unsigned char *)kernel_directory, 0, sizeof(page_directory_t));
+	//memset((unsigned char *)kernel_directory, 0, sizeof(page_directory_t));
 	current_directory = kernel_directory;
 
 	while(i < placement_address) {
@@ -161,10 +157,9 @@ initialise_paging()
 		i += 0x1000;
 	}
 
-	irq_install_handler(IRQ_PAGEFAULT, (isr_t)page_fault);
+	irq_install_handler(14, (isr_t)page_fault);
 
 	switch_page_directory(kernel_directory);
-	puts("paging system initialised\n\0");
 }
 
 
@@ -174,10 +169,10 @@ switch_page_directory(page_directory_t *dir)
 	u32int	 cr0;
 
 	current_directory = dir;
-	asm volatile("mov %0, %%cr3" : : "r"(dir->tables_physical));
-	asm volatile("mov %%cr0, %0" : "=r"(cr0));
-	cr0 |= 0x80000000; // enable paging
-	asm volatile("mov %0, %%cr0" : : "r"(cr0));
+	__asm__ __volatile__ ("mov %0, %%cr3" :: "r"(&dir->tables_physical));
+	__asm__ __volatile__ ("mov %%cr0, %0" : "=r"(cr0));
+	cr0 |= 0x80000000; // enable paging and flushes
+	__asm__ __volatile__ ("mov %0, %%cr0" :: "r"(cr0));
 }
 
 page_t *

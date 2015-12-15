@@ -130,6 +130,11 @@ idt_install()
 	    sizeof(isr_t) * 256
 	);
 
+	// put hardware interrupts from 
+	// 32 to 47 instead of 0 to 15
+	// that are used internally by
+	// the processor
+	reprogram_pic();
 
 	/* 
 	 * ! important to remember as a life lesson:
@@ -174,13 +179,6 @@ idt_install()
 	idt_set_gate(29, (u32int)isr29, 0x08, 0x8E);
 	idt_set_gate(30, (u32int)isr30, 0x08, 0x8E);
 	idt_set_gate(31, (u32int)isr31, 0x08, 0x8E);
-
-	// put hardware interrupts from 
-	// 32 to 47 instead of 0 to 15
-	// that are used internally by
-	// the processor
-	reprogram_pic();
-
 	idt_set_gate(32, (u32int)irq0, 0x08, 0x8E);
 	idt_set_gate(33, (u32int)irq1, 0x08, 0x8E);
 	idt_set_gate(34, (u32int)irq2, 0x08, 0x8E);

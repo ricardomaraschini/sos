@@ -16,15 +16,11 @@ main()
 	init_video();
 	keyboard_install();
 	init_timer(50); // pit stuff
-	initialise_paging();
+	init_paging();
 	puts("ready\n\0");
 
-	//u32int *ptr = (u32int*)0xABC00000;
-	//u32int do_page_fault = *ptr;
-
-	// generating an exception
-	//int x = 10/0;
-	__asm__ __volatile__ ("int $0x3");
+	u32int *ptr = (u32int*)0xA0000000;
+	u32int do_page_fault = *ptr;
 
 	for (;;);
 

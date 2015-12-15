@@ -28,7 +28,6 @@ void
 timer_callback(registers_t r) 
 {
 	ticks++;
-	putint(ticks);
 	dispatch_events();
 }
 
