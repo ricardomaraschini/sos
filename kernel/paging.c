@@ -3,7 +3,7 @@
 #include <kheap.h>
 #include <video.h>
 #include <memutil.h>
-#include <irq.h>
+#include <int.h>
 
 extern u32int		 placement_address;
 page_directory_t	*kernel_directory;
@@ -161,7 +161,7 @@ initialise_paging()
 		i += 0x1000;
 	}
 
-	irq_install_handler(IRQ_PAGEFAULT, page_fault);
+	irq_install_handler(IRQ_PAGEFAULT, (isr_t)page_fault);
 
 	switch_page_directory(kernel_directory);
 	puts("paging system initialised\n\0");

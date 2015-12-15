@@ -1,7 +1,7 @@
 #include <system.h>
 #include <pit.h>
 #include <video.h>
-#include <irq.h>
+#include <int.h>
 #include <port.h>
 
 unsigned long		ticks = 0;
@@ -70,11 +70,11 @@ void
 init_timer(int frequency)
 {
 	
-	int divisor;
-	unsigned char low;
-	unsigned char high;
+	int		divisor;
+	unsigned char	low;
+	unsigned char	high;
 
-	irq_install_handler(IRQ_PIT,timer_callback);
+	irq_install_handler(IRQ_PIT, (isr_t)timer_callback);
 
 	divisor = PIT_HZ / frequency;
 
@@ -88,7 +88,4 @@ init_timer(int frequency)
 	outportb(PIT_DATA0,high);
 
 	empty_events_queue();
-
-	//register_event(100, event_handler);
-
 }

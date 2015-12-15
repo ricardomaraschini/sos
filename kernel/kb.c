@@ -1,7 +1,7 @@
 #include <system.h>
 #include <port.h>
 #include <video.h>
-#include <irq.h>
+#include <int.h>
 
 #define KB_BUF 0x60
 
@@ -41,5 +41,5 @@ keyboard_handler(struct regs *r)
 void
 keyboard_install()
 {
-	irq_install_handler(IRQ_KEYBOARD,keyboard_handler); 
+	irq_install_handler(IRQ_KEYBOARD, (isr_t)keyboard_handler); 
 }
