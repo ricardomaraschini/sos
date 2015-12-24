@@ -25,6 +25,8 @@ void init_paging();
 void switch_page_directory(page_directory_t *);
 page_t *get_page(u32int, int, page_directory_t *);
 void page_faul(registers_t);
+void alloc_frame(page_t *, int, int);
+void free_frame(page_t *);
 
 #define INDEX_FROM_BIT(a)  (a / (8*4))
 #define OFFSET_FROM_BIT(a) (a % (8*4))
