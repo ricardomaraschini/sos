@@ -13,9 +13,9 @@ kmalloc_internal(u32int sz, int align, u32int *phys)
 {
 	u32int	tmp;
 
-	if (align == 1 && (placement_address & 0xFFFFF000)) {
-		placement_address &= 0xFFFFF000; // begin of last allocation
-		placement_address += 0x1000; // next page
+	if (align == 1 && (placement_address & NOTALIGNEDMASK)) {
+		placement_address &= ALIGNEDMASK; // begin of last allocation
+		placement_address += PAGESIZE; // next page
 	}
 
 	// return the physical address
@@ -102,14 +102,14 @@ find_hole(u32int size, u8int align, heap_t *hp)
 			dtloc = loc + sizeof(header_t);
 
 			// if dtloc is not page aligned
-			if ((dtloc & 0XFFFF0000) != 0) {
+			if ((dtloc & NOTALIGNEDMASK) != 0) {
 
 				// bytes beyound page alignment
-				bytes_beyound = dtloc % 0x1000;
+				bytes_beyound = dtloc % PAGESIZE;
 
 				// how many bytes we gonna 
 				// loose on align process
-				offset = 0x1000 - bytes_beyound;
+				offset = PAGESIZE - bytes_beyound;
 			}
 
 			hsize = (s32int)header->size - offset;
@@ -150,10 +150,10 @@ create_heap(u32int start, u32int end, u32int max, u8int sup, u8int ro)
 	heap_t		*heap;
 	header_t	*huge_hole;
 
-	if ((start & 0xFFFF0000) != 0)
+	if ((start % PAGESIZE) != 0)
 		return NULL;
 
-	if ((end & 0xFFFF0000) != 0) 
+	if ((end % PAGESIZE) != 0) 
 		return NULL;
 
 	heap = (heap_t *)kmalloc(sizeof(heap_t));
@@ -163,12 +163,12 @@ create_heap(u32int start, u32int end, u32int max, u8int sup, u8int ro)
 	    &sort_mem_slots
 	);
 
-	// keep a safe place for our ord array indexes
+	// keep a safe place for our ordarray indexes
 	// after this address we may start to alloc
 	start += KHEAP_IDXSIZE * sizeof(type_t);
-	if ((start & 0xFFFF0000) != 0) {
-		start &= 0xFFFF0000;
-		start += 0x1000;
+	if ((start & NOTALIGNEDMASK) != 0) {
+		start &= ALIGNEDMASK;
+		start += PAGESIZE;
 	}
 
 	heap->start_addr = start;
@@ -198,9 +198,9 @@ expand(u32int newsize, heap_t *h)
 	if (newsize <= cursize)
 		return;
 
-	if ((newsize & 0xFFFF0000) != 0) {
-		newsize &= 0xFFFF0000;
-		newsize += 0x1000;
+	if ((newsize & NOTALIGNEDMASK) != 0) {
+		newsize &= ALIGNEDMASK;
+		newsize += PAGESIZE;
 	}
 
 	if (newsize > h->max_addr)
@@ -220,7 +220,7 @@ expand(u32int newsize, heap_t *h)
 		    (h->supervisor) ? 1 : 0,
 		    (h->readonly) ? 1 : 0
 		);
-		i += 0x1000;
+		i += PAGESIZE;
 	}
 
 
@@ -246,7 +246,7 @@ contract(u32int newsize, heap_t *h)
 	if (newsize < KHEAP_MINSIZE)
 		newsize = KHEAP_MINSIZE;
 
-	i = cursize - 0x1000; // last allocated page
+	i = cursize - PAGESIZE; // last allocated page
 	while(i > newsize) {
 		curpage = get_page(
 		    h->start_addr + i,
@@ -255,7 +255,7 @@ contract(u32int newsize, heap_t *h)
 		);
 
 		free_frame(curpage);
-		i -= 0x1000;
+		i -= PAGESIZE;
 	}
 
 	h->end_addr = h->start_addr + newsize;
@@ -271,12 +271,14 @@ alloc(u32int size, u8int align, heap_t *h)
 	header_t	*oheader;
 	u32int		 oholesize;
 	u32int		 oholepos;
+	u32int		 newloc;
+	header_t	*header;
+	footer_t	*footer;
 
-	newsize += size + sizeof(header_t) + sizeof(footer_t);
+	newsize = size + sizeof(header_t) + sizeof(footer_t);
 	i = find_hole(newsize, align, h);
-
 	if (i < 0) {
-		// well well well //XXX
+		// XXX
 	}
 
 	oheader = (header_t *)lookup_ordarray(i, &h->index);
@@ -288,6 +290,22 @@ alloc(u32int size, u8int align, heap_t *h)
 		// increase size to get all space
 		size += oholesize - newsize;
 		newsize = oholesize;
+	}
+
+	if (align && (oholepos & NOTALIGNEDMASK)) {
+		newloc = oholepos + PAGESIZE - (oholepos & 0xFFF) - sizeof(header_t);
+		header = (header_t *)oholepos;
+		header->size = PAGESIZE - (oholesize & 0xFFF) - sizeof(header_t);
+		header->magic = KHEAP_MAGIC;
+		header->ishole = 1;
+		
+		footer = (footer_t *)(newloc - sizeof(footer_t));
+		footer->magic = KHEAP_MAGIC;
+		footer->header = header;
+		oholepos = newloc;
+		oholesize -= header->size;
+	} else {
+		remove_from_ordarray(i, &h->index);
 	}
 
 

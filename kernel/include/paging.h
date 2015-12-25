@@ -28,8 +28,10 @@ void page_faul(registers_t);
 void alloc_frame(page_t *, int, int);
 void free_frame(page_t *);
 
-#define INDEX_FROM_BIT(a)  (a / (8*4))
-#define OFFSET_FROM_BIT(a) (a % (8*4))
-
+#define INDEX_FROM_BIT(a)	(a / (8*4))
+#define OFFSET_FROM_BIT(a)	(a % (8*4))
+#define PAGESIZE		0x1000
+#define ALIGNEDMASK		0xFFFFF000
+#define NOTALIGNEDMASK		0x00000FFF
 
 #endif

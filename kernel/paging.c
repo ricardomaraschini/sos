@@ -19,7 +19,7 @@ set_frame(u32int frame_addr)
 	u32int	 idx;
 	u32int	 off;
 
-	frame = frame_addr / 0x1000; //4kb
+	frame = frame_addr / PAGESIZE;
 	idx = INDEX_FROM_BIT(frame);
 	off = OFFSET_FROM_BIT(frame);
 
@@ -33,7 +33,7 @@ clear_frame(u32int frame_addr)
 	u32int	 idx;
 	u32int	 off;
 
-	frame = frame_addr / 0x1000; // 4kb
+	frame = frame_addr / PAGESIZE;
 	idx = INDEX_FROM_BIT(frame);
 	off = OFFSET_FROM_BIT(frame);
 
@@ -92,7 +92,7 @@ alloc_frame(page_t *page, int is_kernel, int is_writeable)
 		for(;;);
 	}
 
-	set_frame(idx * 0x1000);
+	set_frame(idx * PAGESIZE);
 	page->present = 1;
 	page->rw = (is_writeable) ? 1 : 0;
 	page->user = (is_kernel) ? 0 : 1;
@@ -147,7 +147,7 @@ init_paging()
 	int	 i = 0;
 
 	// with 16mb we have a total of 4096 frames
-	nframes = mem_end_page / 0x1000;
+	nframes = mem_end_page / PAGESIZE;
 
 	// with 16mb we have 128 bytes for frames
 	frames = (u32int *)kmalloc(INDEX_FROM_BIT(nframes));
@@ -162,7 +162,7 @@ init_paging()
 	while(i < placement_address) {
 		curpage = get_page(i, 1, kernel_directory);
 		alloc_frame(curpage, 0, 0);
-		i += 0x1000;
+		i += PAGESIZE;
 	}
 
 	irq_install_handler(14, (isr_t)page_fault);
@@ -249,7 +249,7 @@ get_page(u32int address, int make, page_directory_t *dir)
 	u32int	 tmp;
 
 	// what frame does this address belong to
-	frame_idx = address / 0x1000;
+	frame_idx = address / PAGESIZE;
 
 	// what page table do this frame belong
 	page_table_idx = frame_idx / 1024;
@@ -266,7 +266,7 @@ get_page(u32int address, int make, page_directory_t *dir)
 	// create a new page table and with all its page entries
 	dir->tables[page_table_idx] = 
 	    (page_table_t *)kmalloc_ap(sizeof(page_table_t), &tmp);
-	memset((unsigned char *)dir->tables[page_table_idx], 0, 0x1000);
+	memset((unsigned char *)dir->tables[page_table_idx], 0, PAGESIZE);
 
 	tmp |= 0x7; // PRESENT, RW, US.
 	dir->tables_physical[page_table_idx] = tmp;
