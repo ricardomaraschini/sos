@@ -238,9 +238,9 @@ contract(u32int newsize, heap_t *h)
 	if (newsize > cursize)
 		return 0;
 
-	if ((newsize & 0x1000) != 0) {
-		newsize &= 0x1000;
-		newsize += 0x1000;
+	if ((newsize & PAGESIZE) != 0) {
+		newsize &= PAGESIZE;
+		newsize += PAGESIZE;
 	}
 
 	if (newsize < KHEAP_MINSIZE)
