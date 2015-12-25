@@ -142,10 +142,14 @@ page_fault(registers_t regs)
 void
 init_paging()
 {
+	page_t	*curpage;
 	u32int	 mem_end_page = 0x1000000; // 16 MB
 	int	 i = 0;
 
+	// with 16mb we have a total of 4096 frames
 	nframes = mem_end_page / 0x1000;
+
+	// with 16mb we have 128 bytes for frames
 	frames = (u32int *)kmalloc(INDEX_FROM_BIT(nframes));
 	memset((unsigned char *)frames, 0, INDEX_FROM_BIT(nframes));
 
@@ -156,12 +160,12 @@ init_paging()
 	current_directory = kernel_directory;
 
 	while(i < placement_address) {
-		alloc_frame(get_page(i, 1, kernel_directory), 0, 0);
+		curpage = get_page(i, 1, kernel_directory);
+		alloc_frame(curpage, 0, 0);
 		i += 0x1000;
 	}
 
 	irq_install_handler(14, (isr_t)page_fault);
-
 	switch_page_directory(kernel_directory);
 }
 
@@ -178,24 +182,94 @@ switch_page_directory(page_directory_t *dir)
 	__asm__ __volatile__ ("mov %0, %%cr0" :: "r"(cr0));
 }
 
+
+
+/**
+ * PAGE DIRECTORY STRUCTURE
+ *
+ * A page directory contains entries for 1024
+ * page tables, every page table contains entries
+ * for 1024 pages, here called frames.
+ * Every frames is 0x1000(4k) in size
+ *
+ * PT  = page table
+ * PTe = page table entries
+ *
+ *     ,________,         
+ *     |PT0     |-------->,________,          FRAMES
+ *     |PT1     |-----,   |PTe0    |-------->,________,      MEM ADDRESSES
+ *     |PT2     |     |   |PTe1    |-----,   | 0x1000 | aka   0x00000000
+ *     |...     | .   |   |...     |     |   | bytes  | 4kb      ....
+ *     |...     | .   |   |PTe1023 |     |   `--------'       0x00000FFF
+ *     |...     | .   |   `--------'     `-->,________,
+ *     |PT1022  |     `-->,________,         | 0x1000 | aka   0x00001000
+ *     |PT1023  |--,      |PTe0    |         | bytes  | 4kb      ....
+ *     `--------'  |      |...     |         `--------'       0x00001FFF
+ *                 |      |PTe1023 |             .
+ *                 |      `--------'             .            0x00002000
+ *                 `----->,________,             .               ...
+ *                        |PTe0    |             .            0x00002FFF
+ *                        |PTe1    |             .                .
+ *                        |...     |             .                .
+ *                        |PTe1023 |-----,       .                .
+ *                        `--------'     |       .                .
+ *                                       `-->,________,           .
+ *                                           | 0x1000 | aka   0xFFFFF000
+ *                                           | bytes  | 4kb      ...
+ *                                           `--------'       0xFFFFFFFF
+ *
+ * assuming address 0xFFFFF000, we first need to see
+ * in what frame does it fit, as we have a page size of
+ * 0x1000 we simple divide it to see that our frame is
+ * the frame number 1048575(0xFFFFF000 / 0x1000);
+ * 
+ * on what page table we have to look to find page entry
+ * for frame  number 1048575 ?  we devide it by 1024 
+ * because we have 1024 page tables, so:
+ * 1048575 / 1024 = 1023. 
+ *
+ * now we know that our address is stored somewhere 
+ * inside page table number 1023 but where exactly?
+ *
+ * we may discover exactly where using a mod operation to
+ * get the offset inside the page table, so the frame number
+ * 1048575 % 1024 is has an offset of 1023 inside page table
+ * 1023;
+ *
+ * in a nutshell, our frame 0xFFFFF000 is stored on page table
+ * 1023 with an offset of 1023(page table entry), in other 
+ * words the last frame in memory;
+ */
 page_t *
 get_page(u32int address, int make, page_directory_t *dir)
 {
-	u32int	 table_idx;
+	u32int	 frame_idx;
+	u32int	 page_table_idx;
+	u32int	 page_entry_offset;
 	u32int	 tmp;
 
-	address /= 0x1000;
-	table_idx = address / 1024;
+	// what frame does this address belong to
+	frame_idx = address / 0x1000;
 
-	if (dir->tables[table_idx])
-		return &dir->tables[table_idx]->pages[address % 1024];
+	// what page table do this frame belong
+	page_table_idx = frame_idx / 1024;
+
+	// what page table entry we need to look at
+	page_entry_offset = frame_idx % 1024;
+
+	if (dir->tables[page_table_idx])
+		return &dir->tables[page_table_idx]->pages[page_entry_offset];
 
 	if (!make)
 		return 0;
 
-	dir->tables[table_idx] = (page_table_t *)kmalloc_ap(sizeof(page_table_t), &tmp);	
-	memset((unsigned char *)dir->tables[table_idx], 0, 0x1000);
-	dir->tables_physical[table_idx] = tmp | 0x7; // PRESENT, RW, US.
-	return &dir->tables[table_idx]->pages[address % 1024];
+	// create a new page table and with all its page entries
+	dir->tables[page_table_idx] = 
+	    (page_table_t *)kmalloc_ap(sizeof(page_table_t), &tmp);
+	memset((unsigned char *)dir->tables[page_table_idx], 0, 0x1000);
+
+	tmp |= 0x7; // PRESENT, RW, US.
+	dir->tables_physical[page_table_idx] = tmp;
+	return &dir->tables[page_table_idx]->pages[page_entry_offset];
 }
 
