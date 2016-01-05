@@ -25,7 +25,7 @@ create_ordarray(u32int max_size, cmpfnc_t cmpfnc)
 
 
 ordarray_t
-place_ordarray(u32int addr, u32int max_size, cmpfnc_t cmpfnc)
+place_ordarray(void *addr, u32int max_size, cmpfnc_t cmpfnc)
 {
 	ordarray_t	oa;
 

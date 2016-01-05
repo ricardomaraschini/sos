@@ -57,7 +57,7 @@ test_frame(u32int frame_addr)
 }
 */
 
-static u32int
+static s32int
 first_frame()
 {
 	u32int	 i;
@@ -70,25 +70,25 @@ first_frame()
 
 		for(j=0; j<32; j++) {
 			to_test = 0x1 << j;
-			if ( !(frames[i] & to_test) ) {
+			if ((frames[i] & to_test) == 0) {
 				return i * 4 * 8 + j;
 			}
 		}
 	}
 
-	return (u32int)-1;
+	return (s32int)-1;
 }
 
 void
 alloc_frame(page_t *page, int is_kernel, int is_writeable)
 {
-	u32int	 idx;
+	s32int	 idx;
 
 	if (page->frame != 0)
 		return;
 
 	idx = first_frame();
-	if (idx == (u32int)-1) {
+	if (idx < 0) {
 		puts("no free frames\n\0");
 		for(;;);
 	}
@@ -160,9 +160,8 @@ init_paging()
 	//memset((unsigned char *)kernel_directory, 0, sizeof(page_directory_t));
 	current_directory = kernel_directory;
 
-	for(i=KHEAP_START; i<KHEAP_INIEND; i+=PAGESIZE) {
+	for(i=KHEAP_START; i<KHEAP_INIEND; i+=PAGESIZE)
 		get_page(i, 1, kernel_directory);
-	}
 
 	i = 0;
 	while(i <= placement_address) {

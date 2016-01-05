@@ -59,34 +59,69 @@ cls()
 	move_csr();
 }
 
+void
+puthex(u32int val)
+{
+	s32int	 tmp;
+	char	 nozeroes = 1;
+	int	 i;
+
+	puts("0x\x0");
+
+	for(i=28; i>0; i-=4) {
+		tmp = (val >> i) & 0xF;
+		if (tmp == 0 && nozeroes != 0)
+			continue;
+
+		if (tmp >= 0xA) {
+			nozeroes = 0;
+			putch(tmp - 0xA + 'a');
+		} else {
+			nozeroes = 0;
+			putch(tmp + '0');
+		}
+
+	}
+	
+
+	tmp = val & 0xF;
+	if (tmp >= 0xA) {
+		putch(tmp - 0xA + 'a');
+		return;
+	}
+
+	putch(tmp + '0');
+
+}
+
 void 
 putint(int d)
 {
+	s32int	acc;
+	char	c[32];
+	char	c2[32];
+	int	i = 0;
+	int	j = 0;
 
-	int sign;
-	int i = 0;
-	int j = 0;
-	char revstr[12];
-	char str[12];
+	if (d == 0) {
+		putch('0');
+		return;
+	}
 
-	sign = d;
-	if (sign < 0)
-		d = -d;
-	
-	do {
-		revstr[i++] = d % 10 + '0';
-		d /= 10;
-	} while((d/10) > 0);
-	revstr[i] = d % 10 + '0';
+	acc = d;
+	while(acc > 0) {
+		c[i] = '0' + acc % 10;
+		acc /= 10;
+		i++;
+	}
+	c[i] = '\x0';
 
-	if (sign < 0)
-		revstr[++i] = '-';
+	c2[i--] = '\x0';
+	while(i >= 0) {
+		c2[i--] = c[j++];
+	}
 
-	while(i>=0)
-		str[j++] = revstr[i--];
-	str[j] = '\0';
-
-	puts(str);
+	puts(c2);
 }
 
 /* 
@@ -121,7 +156,7 @@ putch(unsigned char c)
 	}
 
 	/* end of line */
-	if(cursor.x >= 80) {
+	if (cursor.x >= 80) {
 		cursor.x = 0;
 		cursor.y++;
 	}
@@ -165,4 +200,18 @@ init_video(void)
 {
 	textmemptr = (unsigned short *)VIDEOOUTADDR;
 	cls();
+}
+
+extern void
+panic_assert(const char *file, u32int line, const char *desc)
+{
+	asm volatile("cli"); // Disable interrupts.
+	puts("ASSERTION-FAILED(");
+	puts((char *)desc);
+	puts(") at ");
+	puts((char *)file);
+	puts(":");
+	putint(line);
+	puts("\n");
+	for(;;);
 }

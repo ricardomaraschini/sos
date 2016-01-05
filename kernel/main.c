@@ -5,6 +5,8 @@
 #include <gdt.h>
 #include <pit.h>
 #include <int.h>
+#include <ordarray.h>
+#include <kheap.h>
 
 
 int 
@@ -17,7 +19,26 @@ main()
 	keyboard_install();
 	init_timer(50); // pit stuff
 	init_paging();
-	puts("ready\n\0");
+
+	u32int a = kmalloc(8);
+	puts("a: \x0");
+	puthex(a);
+
+	u32int b = kmalloc(8);
+	puts("\nb: \x0");
+	puthex(b);
+
+	kfree((void *)b);
+
+	b = kmalloc(8);
+	puts("\nb: \x0");
+	puthex(b);
+	/*
+	u32int c = kmalloc(8);
+	puts("\nc: \x0");
+	puthex(c);
+	kfree((void *)a);
+	*/
 
 	/*
 	u32int *ptr = (u32int*)0xA0000000;

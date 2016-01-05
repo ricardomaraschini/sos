@@ -14,7 +14,7 @@ typedef struct ordarray {
 
 u8int default_cmpfnc(type_t, type_t);
 ordarray_t create_ordarray(u32int, cmpfnc_t);
-ordarray_t place_ordarray(u32int, u32int, cmpfnc_t);
+ordarray_t place_ordarray(void *, u32int, cmpfnc_t);
 void insert_into_ordarray(type_t, ordarray_t *);
 type_t lookup_ordarray(u32int, ordarray_t *);
 void remove_from_ordarray(u32int, ordarray_t *);

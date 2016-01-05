@@ -34,6 +34,8 @@ u32int kmalloc_a(u32int sz);
 u32int kmalloc_p(u32int sz, u32int *phys);
 u32int kmalloc_ap(u32int sz, u32int *phys);
 u32int kmalloc(u32int sz);
+void * alloc(u32int, u8int, heap_t *);
+void kfree(void *);
 heap_t *create_heap(u32int, u32int, u32int, u8int, u8int);
 
 #endif

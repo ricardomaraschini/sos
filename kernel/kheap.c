@@ -13,7 +13,20 @@ heap_t			*kheap;
 u32int
 kmalloc_internal(u32int sz, int align, u32int *phys)
 {
-	u32int	tmp;
+	u32int	 tmp;
+	page_t	*page;
+	void	*address;
+
+	if (kheap != 0) {
+		address = alloc(sz, align, kheap);
+		if (phys != 0) {
+			page = get_page((u32int)address, 0, kernel_directory);
+			*phys = page->frame * PAGESIZE + ((u32int)address & NOTALIGNEDMASK);
+		}
+
+		return (u32int)address;
+	}
+
 
 	if (align == 1 && (placement_address & NOTALIGNEDMASK)) {
 		placement_address &= ALIGNEDMASK; // begin of last allocation
@@ -152,16 +165,12 @@ create_heap(u32int start, u32int end, u32int max, u8int sup, u8int ro)
 	heap_t		*heap;
 	header_t	*huge_hole;
 
-	if ((start % PAGESIZE) != 0)
-		return NULL;
-
-	if ((end % PAGESIZE) != 0) 
-		return NULL;
-
+	ASSERT(start % PAGESIZE == 0);
+	ASSERT(end % PAGESIZE == 0);
 
 	heap = (heap_t *)kmalloc(sizeof(heap_t));
 	heap->index = place_ordarray(
-	    start,
+	    (void *)start,
 	    KHEAP_IDXSIZE,
 	    &sort_mem_slots
 	);
@@ -180,11 +189,10 @@ create_heap(u32int start, u32int end, u32int max, u8int sup, u8int ro)
 	heap->supervisor = sup;
 	heap->readonly = ro;
 
-	huge_hole = (header_t *)kmalloc(sizeof(header_t));
-	huge_hole->magic = KHEAP_MAGIC;
+	huge_hole = (header_t *)start;
 	huge_hole->size = end - start;
+	huge_hole->magic = KHEAP_MAGIC;
 	huge_hole->ishole = 1;
-
 	insert_into_ordarray((type_t)huge_hole, &heap->index);
 
 	return heap;
@@ -293,6 +301,8 @@ alloc(u32int size, u8int align, heap_t *h)
 	// header and footer size
 	newsize = size + METADATASIZE;
 	i = find_hole(newsize, align, h);
+	putint(i);
+	puts("\n");
 
 	// there is no hole
 	if (i < 0) { 
@@ -494,4 +504,10 @@ free(void *p, heap_t *h)
 	if (add)
 		insert_into_ordarray(header, &h->index);
 
+}
+
+void
+kfree(void *p)
+{
+	free(p, kheap);
 }
