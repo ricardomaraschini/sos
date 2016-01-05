@@ -48,6 +48,7 @@ ld -mi386linux -T link.ld -o kernel.bin 	\
 	ordarray.o
 
 
+exit
 sudo mount -o loop -t vfat $DIR/boot.img /mnt/floppy
 sudo cp $DIR/kernel/kernel.bin /mnt/floppy/boot
 sudo umount /mnt/floppy

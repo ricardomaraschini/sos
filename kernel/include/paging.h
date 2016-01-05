@@ -33,5 +33,6 @@ void free_frame(page_t *);
 #define PAGESIZE		0x1000
 #define ALIGNEDMASK		0xFFFFF000
 #define NOTALIGNEDMASK		0x00000FFF
+#define METADATASIZE		(sizeof(header_t) + sizeof(footer_t))
 
 #endif

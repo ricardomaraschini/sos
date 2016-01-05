@@ -266,47 +266,84 @@ contract(u32int newsize, heap_t *h)
 void *
 alloc(u32int size, u8int align, heap_t *h)
 {
-	u32int		 newsize;
 	s32int		 i;
-	header_t	*oheader;
+	u32int		 datapageoffset;
+	u32int		 newsize;
 	u32int		 oholesize;
-	u32int		 oholepos;
+	u32int		 oheaderpos;
+	u32int		 nheaderpos;
+	u32int		 odatapos;
 	u32int		 newloc;
+	header_t	*oheader;
 	header_t	*header;
+	header_t	*blockheader;
 	footer_t	*footer;
 
-	newsize = size + sizeof(header_t) + sizeof(footer_t);
+	// size must be summed up with 
+	// header and footer size
+	newsize = size + METADATASIZE;
 	i = find_hole(newsize, align, h);
 	if (i < 0) {
 		// XXX
 	}
 
 	oheader = (header_t *)lookup_ordarray(i, &h->index);
-	oholepos = (u32int)oheader;
+	nheaderpos = oheaderpos = (u32int)oheader;
+	odatapos = (u32int)oheader + sizeof(header_t);
 	oholesize = oheader->size;
 
 	// we are unable to split the hole in two
-	if ((oholesize - newsize) < (sizeof(header_t) + sizeof(footer_t))) {
+	if ((oholesize - newsize) < METADATASIZE) {
 		// increase size to get all space
 		size += oholesize - newsize;
 		newsize = oholesize;
 	}
 
-	if (align && (oholepos & NOTALIGNEDMASK)) {
-		newloc = oholepos + PAGESIZE - (oholepos & 0xFFF) - sizeof(header_t);
-		header = (header_t *)oholepos;
-		header->size = PAGESIZE - (oholesize & 0xFFF) - sizeof(header_t);
+	datapageoffset = (odatapos & NOTALIGNEDMASK);
+	if (align && datapageoffset) {
+
+		// get the address of the next page's begin
+		// and subtract sizeof(header_t) of it
+		newloc = odatapos + PAGESIZE - datapageoffset - sizeof(header_t);
+
+		header = (header_t *)oheaderpos;
+		header->size = PAGESIZE - datapageoffset - METADATASIZE;
 		header->magic = KHEAP_MAGIC;
 		header->ishole = 1;
 		
 		footer = (footer_t *)(newloc - sizeof(footer_t));
 		footer->magic = KHEAP_MAGIC;
 		footer->header = header;
-		oholepos = newloc;
+
+		nheaderpos = newloc;
 		oholesize -= header->size;
 	} else {
 		remove_from_ordarray(i, &h->index);
 	}
 
+	blockheader = (header_t *)nheaderpos;
+	blockheader->magic = KHEAP_MAGIC;
+	blockheader->ishole = 0;
+	blockheader->size = newsize;
 
+	footer_t *block_footer = (footer_t *)(nheaderpos + sizeof(header_t) + size);
+	block_footer->magic = KHEAP_MAGIC;
+	block_footer->header = blockheader;
+
+	if (oholesize - newsize > 0) {
+		header_t *hole_header = 
+		    (header_t *)(nheaderpos + sizeof(header_t) + size + sizeof(footer_t));
+		hole_header->magic = KHEAP_MAGIC;
+		hole_header->ishole = 1;
+		hole_header->size = oholesize - newsize;
+		footer_t *hole_footer = (footer_t *) ( (u32int)hole_header + oholesize - newsize - sizeof(footer_t) );
+		if ((u32int)hole_footer < h->end_addr) {
+			hole_footer->magic = KHEAP_MAGIC;
+			hole_footer->header = hole_header;
+		}
+
+		insert_into_ordarray((void*)hole_header, &h->index);
+	}
+
+	return (void *)((u32int)blockheader + sizeof(header_t));
 }
