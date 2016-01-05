@@ -3,6 +3,7 @@
 
 #define KHEAP_START	0xC0000000
 #define KHEAP_INISIZE	0x100000
+#define KHEAP_INIEND	(KHEAP_START + KHEAP_INISIZE)
 #define KHEAP_IDXSIZE	0x20000
 #define KHEAP_MAGIC	0xADEADBEE
 #define KHEAP_MINSIZE	0x70000
@@ -33,5 +34,6 @@ u32int kmalloc_a(u32int sz);
 u32int kmalloc_p(u32int sz, u32int *phys);
 u32int kmalloc_ap(u32int sz, u32int *phys);
 u32int kmalloc(u32int sz);
+heap_t *create_heap(u32int, u32int, u32int, u8int, u8int);
 
 #endif

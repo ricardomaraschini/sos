@@ -31,8 +31,9 @@ place_ordarray(u32int addr, u32int max_size, cmpfnc_t cmpfnc)
 
 	oa.max_size = max_size;
 	oa.array = (type_t *)addr;
-	memset((unsigned char *)&oa.array, 0, sizeof(type_t) * max_size);
+	memset((unsigned char *)oa.array, 0, sizeof(type_t) * max_size);
 	oa.size = 0;
+	oa.max_size = max_size;
 	oa.cmpfnc = cmpfnc;
 
 	return oa;

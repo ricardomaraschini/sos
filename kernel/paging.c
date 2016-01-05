@@ -6,6 +6,7 @@
 #include <memutil.h>
 #include <int.h>
 
+extern heap_t		*kheap;
 extern u32int		 placement_address;
 page_directory_t	*kernel_directory;
 page_directory_t	*current_directory;
@@ -159,14 +160,26 @@ init_paging()
 	//memset((unsigned char *)kernel_directory, 0, sizeof(page_directory_t));
 	current_directory = kernel_directory;
 
-	while(i < placement_address) {
+	for(i=KHEAP_START; i<KHEAP_INIEND; i+=PAGESIZE) {
+		get_page(i, 1, kernel_directory);
+	}
+
+	i = 0;
+	while(i <= placement_address) {
 		curpage = get_page(i, 1, kernel_directory);
 		alloc_frame(curpage, 0, 0);
 		i += PAGESIZE;
 	}
 
+	for(i=KHEAP_START; i<KHEAP_INIEND; i+=PAGESIZE) {
+		curpage = get_page(i, 1, kernel_directory);
+		alloc_frame(curpage, 0, 0);
+	}
+
 	irq_install_handler(14, (isr_t)page_fault);
 	switch_page_directory(kernel_directory);
+
+	kheap = create_heap(KHEAP_START, KHEAP_INIEND, 0xCFFFF000, 0, 0);
 }
 
 
