@@ -301,8 +301,6 @@ alloc(u32int size, u8int align, heap_t *h)
 	// header and footer size
 	newsize = size + METADATASIZE;
 	i = find_hole(newsize, align, h);
-	putint(i);
-	puts("\n");
 
 	// there is no hole
 	if (i < 0) { 
@@ -432,11 +430,8 @@ free(void *p, heap_t *h)
 	header = (header_t *)((u32int)p - sizeof(header_t));
 	footer = (footer_t *)((u32int)header + header->size - sizeof(footer_t));
 
-	if (header->magic != KHEAP_MAGIC) //XXX
-		return;
-
-	if (footer->magic != KHEAP_MAGIC) //XXX
-		return;
+	ASSERT(header->magic == KHEAP_MAGIC);
+	ASSERT(footer->magic == KHEAP_MAGIC);
 
 	header->ishole = 1;
 	add = 1;
@@ -469,12 +464,9 @@ free(void *p, heap_t *h)
 			i++;
 		}
 
-		if (i == h->index.size) //XXX
-			return;
-
+		ASSERT(i < h->index.size);
 		remove_from_ordarray(i, &h->index);
 	}
-
 
 	// contract
 	if ((u32int)footer + sizeof(footer_t) == h->end_addr) {
@@ -493,10 +485,8 @@ free(void *p, heap_t *h)
 				i++;
 			}
 
-			if (i == h->index.size)
-				return; //XXX
-
-			remove_from_ordarray(i, &h->index);
+			if (i < h->index.size)
+				remove_from_ordarray(i, &h->index);
 		}
 
 	}

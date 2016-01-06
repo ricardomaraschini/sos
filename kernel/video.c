@@ -206,7 +206,7 @@ extern void
 panic_assert(const char *file, u32int line, const char *desc)
 {
 	asm volatile("cli"); // Disable interrupts.
-	puts("ASSERTION-FAILED(");
+	puts("\nASSERTION-FAILED(");
 	puts((char *)desc);
 	puts(") at ");
 	puts((char *)file);
